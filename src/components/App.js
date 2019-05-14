@@ -1,19 +1,61 @@
-import React from 'react'
+import React from "react";
 
-import Filters from './Filters'
-import PetBrowser from './PetBrowser'
+import Filters from "./Filters";
+import PetBrowser from "./PetBrowser";
 
 class App extends React.Component {
   constructor() {
-    super()
+    super();
 
     this.state = {
       pets: [],
       filters: {
-        type: 'all'
+        type: "all"
       }
-    }
+    };
   }
+
+  onChangeType = newType => {
+    this.setState({
+      filters: Object.assign({}, this.state.filters, {
+        type: newType
+      })
+    });
+  };
+
+  onAdoptPet = id => {
+    const pets = this.state.pets.map(item => {
+      if (item.id === id) {
+        return { ...item, isAdopted: true };
+      }
+    });
+    this.setState({ pets });
+  };
+
+  onFindPetsClick = e => {
+    switch (this.state.filters.type) {
+      case "all":
+        this.handleRequest("/api/pets");
+        break;
+      case "cat":
+        this.handleRequest("/api/pets?type=cat");
+        break;
+      case "dog":
+        this.handleRequest("/api/pets?type=dog");
+        break;
+      case "micropig":
+        this.handleRequest("/api/pets?type=micropig");
+        break;
+      default:
+        return;
+    }
+  };
+
+  handleRequest = url => {
+    fetch(url)
+      .then(resp => resp.json())
+      .then(res => this.setState({ pets: res }));
+  };
 
   render() {
     return (
@@ -24,16 +66,19 @@ class App extends React.Component {
         <div className="ui container">
           <div className="ui grid">
             <div className="four wide column">
-              <Filters />
+              <Filters
+                onFindPetsClick={this.onFindPetsClick}
+                onChangeType={this.onChangeType}
+              />
             </div>
             <div className="twelve wide column">
-              <PetBrowser />
+              <PetBrowser pets={this.state.pets} onAdoptPet={this.onAdoptPet} />
             </div>
           </div>
         </div>
       </div>
-    )
+    );
   }
 }
 
-export default App
+export default App;
